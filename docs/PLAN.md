@@ -29,6 +29,13 @@ from visitor chat; the plugin still requires no Python runtime.
 See [Agent service](AGENT-SERVICE.md). This is not autonomous write execution or
 a finished CRM/social OAuth connection marketplace.
 
+Version 1.6.0 connects WordPress to a published public agent ID from the hosted
+builder (separate service 0.2.0). The form-based builder supplies templates,
+tenant-isolated saved drafts/published snapshots, revision conflict controls,
+bounded previews and explicit staff read grants. It is not a drag-and-drop
+arbitrary-code workflow editor, OAuth account-connection UI or an autonomous
+private-data synthesis system.
+
 ---
 
 ## 1. Goals

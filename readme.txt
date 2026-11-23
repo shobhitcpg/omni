@@ -4,7 +4,7 @@ Tags: ai, chatbot, openai, gemini, ollama
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,12 @@ Pattern: `OTAI_{PROVIDER}_{FIELD}` (e.g. `OTAI_GEMINI_API_KEY`, `OTAI_AZURE_OPEN
 * `otai_show_widget`, `otai_allowed_origins`, `otai_client_ip`, `otai_redact_patterns`, `otai_capability`.
 
 == Changelog ==
+
+= 1.6.0 =
+* Added optional Published agent ID selection for the centrally hosted Agent Builder (separate service 0.2.0).
+* Selected agents are tenant-bound, published public agents; draft/staff agents are not visitor-chat targets.
+* Disabled WordPress response caching when the agent service is a routing candidate, so remote publication/permission changes are checked on each remote turn.
+* Central builder provides templates, saved drafts, explicit publish/unpublish, public evidence preview and published staff read permissions. CRM/social OAuth connection onboarding is still separate.
 
 = 1.5.0 =
 * Added optional FastAPI/LangGraph agent-service provider with explicit outbound consent, public site profile, independent site credential and strict response contract.

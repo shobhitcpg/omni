@@ -25,6 +25,8 @@ unlimited scale, HIPAA/GDPR compliance or fully autonomous agents.
 | Privacy operations | Bounded personal-data export/erasure, explicit database errors, retention and opt-in transcript storage |
 | Operations | Site Health, configuration-bound test records, CLI readiness/worker/support |
 | Optional agent bridge (1.5.0) | Public site profile/context to separately deployed FastAPI/LangGraph service; tenant-specific configuration; staff read tools isolated from visitor chat |
+| Central agent builder (1.6.0 / service 0.2.0) | Hosted templates/editor, draft/published snapshots, revision conflict checks, public evidence preview, exact configured staff read permissions; WordPress selects public agent ID |
+| Builder recovery and checks (service 0.3.0) | Latest 50 tenant-isolated versions, draft-only restore, optional saved text/mode evaluations with revision/model-bound 24-hour publish gate, explicit credential readiness, storage readiness and consistent SQLite backup/restore commands |
 | Customer support | Allowlisted opt-in download; no automatic diagnostic uploads |
 | Distribution | Clean ZIP excludes tests/tools; standard WordPress upload/replace |
 | Data ownership | Retained on deactivation/default uninstall; explicit local-data deletion option |
@@ -37,7 +39,7 @@ are real work, not features that a synthetic test can certify:
 | Gate | Required evidence or decision |
 | --- | --- |
 | Live provider qualification | Test actual embedding and generation models/API versions, limits, retries, quotas and outages; current contracts are not live-model certification |
-| Answer-quality evaluation | Representative corpora/questions, negative questions, factual citations, prompt-injection/abstention evaluation and explicit acceptance thresholds per supported use case |
+| Answer-quality evaluation | Service 0.3.0 supplies saved sample-context regression checks and an optional publication gate. Real representative corpora/questions, retrieval/factual citation checks, prompt-injection evaluation and live-model acceptance thresholds remain required per supported use case |
 | Capacity and resilience | Six-process queue/offline-chat, quota/storage failure and actual SQL restore drills passed. Still establish sustained HTTP/generative-load, memory and recovery objectives on the target deployment |
 | Compatibility matrix | WP 6.9.4/PHP 8.2.29/MySQL 8.4.0, single-site/subdirectory multisite, Twenty Twenty-One browser smoke and denied CREATE/ALTER recovery passed. Other PHP versions, hosts, caches, themes and actual WooCommerce versions still require qualification |
 | Access controls | Fail-closed recognised-system mitigation and revocation tests passed. No blanket membership/enrolment/tenant connector support; each advertised integration needs an actual tested anonymous-public-only connector |
@@ -66,7 +68,7 @@ need deployment-specific acceptance rather than a universal "enterprise" label.
 From the repository on Windows:
 
 ```powershell
-.\plugins\omnithread-ai\tools\package.ps1 -Destination 'C:\releases\omnithread-ai-1.5.0.zip'
+.\plugins\omnithread-ai\tools\package.ps1 -Destination 'C:\releases\omnithread-ai-1.6.0.zip'
 ```
 
 Use a new destination outside the source tree. The tool copies only runtime
@@ -80,6 +82,18 @@ The current offline database suites and SQL restoration drill passed 156 checks;
 Version 1.5.0 adds 17 bridge contract checks plus two actual PHP/FastAPI/LangGraph
 HTTP checks; the separate service has 34 Python contract tests. These do not
 qualify real CRM/social accounts or hosted service operation.
+The latest 1.6.0 run passed 180 WordPress checks (156 existing plus 24 bridge/cache/
+selected-agent checks), and service 0.2.0 passed 55 Python tests. Builder browser
+smoke checks covered actual saved drafts, previews, publication/revocation,
+synthetic staff reads, mobile layout and locking. The hosted operator UI still
+requires deployment behind your own SSO/MFA gateway; no per-user identity service
+or OAuth customer-account connection wizard is included.
+Service 0.3.0 additionally passed 82 Python tests, including history/restore,
+optional revision/configuration-bound evaluations, publication concurrency,
+readiness and consistent live-WAL backup/restore. Browser checks exercised these
+flows and CLI backup/restore passed on a running synthetic service. WordPress
+runtime remains 1.6.0; this service-only update does not requalify the WordPress
+compatibility matrix or real external accounts/models.
 Setup tests cover safe first install,
 publication gating, FAQ-only onboarding, explicit rebuild failures, credential
 preservation, test invalidation/expiry, support-report allowlisting and permissions.

@@ -61,6 +61,10 @@ abstract class Base_Provider {
 		return false;
 	}
 
+	public function allows_response_cache() {
+		return true;
+	}
+
 	public function get( $key ) {
 		if ( array_key_exists( $key, $this->config ) ) {
 			return $this->config[ $key ];

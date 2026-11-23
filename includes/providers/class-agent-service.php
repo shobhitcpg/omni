@@ -27,6 +27,11 @@ class Agent_Service extends Base_Provider {
 				'label' => __( 'Public-chat site credential (not operator key)', 'omnithread-ai' ),
 				'type' => 'secret', 'default' => '', 'required' => true,
 			),
+			'agent_id' => array(
+				'label' => __( 'Published agent ID (optional)', 'omnithread-ai' ),
+				'type' => 'text', 'default' => '',
+				'help' => __( 'Copy a published public agent ID from the central builder. Blank keeps the server tenant default. Staff agents cannot be used in visitor chat.', 'omnithread-ai' ),
+			),
 			'consent' => array(
 				'label' => __( 'I approve sending the public site profile, current question and retrieved context to this service.', 'omnithread-ai' ),
 				'type' => 'checkbox', 'default' => 0, 'required' => true,
@@ -36,6 +41,10 @@ class Agent_Service extends Base_Provider {
 
 	public function supports() {
 		return array();
+	}
+
+	public function allows_response_cache() {
+		return false;
 	}
 
 	public function is_configured() {
@@ -66,12 +75,20 @@ class Agent_Service extends Base_Provider {
 		if ( mb_strlen( $last['content'] ) > 4000 || mb_strlen( $context ) > 24000 ) {
 			return new \WP_Error( 'otai_agent_context', __( 'Agent question/context exceeds the service limits. Reduce message or RAG context size.', 'omnithread-ai' ) );
 		}
+		$agent_id = trim( (string) $this->get( 'agent_id' ) );
+		if ( '' !== $agent_id && ! preg_match( '/^[a-z0-9][a-z0-9_-]{2,63}$/D', $agent_id ) ) {
+			return new \WP_Error( 'otai_agent_id', __( 'Use a valid published public agent ID from the central builder.', 'omnithread-ai' ) );
+		}
+		$body = array(
+			'site' => Site_Context::profile(), 'question' => $last['content'], 'context' => $context,
+			'diagnostic' => ! empty( $params['diagnostic'] ),
+		);
+		if ( '' !== $agent_id ) {
+			$body['agent_id'] = $agent_id;
+		}
 		$result = $this->post_json(
 			$base . '/v1/chat',
-			array(
-				'site' => Site_Context::profile(), 'question' => $last['content'], 'context' => $context,
-				'diagnostic' => ! empty( $params['diagnostic'] ),
-			),
+			$body,
 			array( 'Authorization' => 'Bearer ' . $key ),
 			self::param( $params, 'timeout', 30 )
 		);

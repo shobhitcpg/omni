@@ -3,7 +3,7 @@
  * Plugin Name:       OmniThread AI – Smart Site Assistant
  * Plugin URI:        https://github.com/wpcomvip/my-capgemini
  * Description:       Make any WordPress site AI-enabled. Industry-ready chat assistant with OpenAI, Azure OpenAI, Gemini, Claude, Amazon Bedrock, Ollama and more, plus a cost-saving Smart Query Mode that answers from your own content first.
- * Version:           1.5.0
+ * Version:           1.6.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            OmniThread AI
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'OTAI_VERSION', '1.5.0' );
+define( 'OTAI_VERSION', '1.6.0' );
 define( 'OTAI_DB_VERSION', '5' );
 define( 'OTAI_FILE', __FILE__ );
 define( 'OTAI_DIR', plugin_dir_path( __FILE__ ) );

@@ -20,6 +20,9 @@ You can start with database search and add AI/vector services later.
 For client-specific agents hosted separately, see [Optional agent service](AGENT-SERVICE.md).
 It requires separate deployment and explicit outbound consent; it is not enabled
 by activation, and public chat cannot use staff CRM/MCP credentials.
+The service's central `/builder` workspace creates/publishes agents; configure
+only the public-chat credential and published public agent ID in WordPress.
+Never put a builder/operator credential into a customer site's provider settings.
 
 ## First installation
 

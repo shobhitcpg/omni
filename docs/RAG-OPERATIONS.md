@@ -1,4 +1,4 @@
-# RAG operations (1.5.0)
+# RAG operations (1.6.0)
 
 The plugin implements incremental RAG, not autonomous write agents. It remains
 theme-independent; keyword-only mode needs no embedding service.
@@ -240,3 +240,12 @@ models, semantic relevance/abstention, sustained deployment load, host backups, 
 membership ACLs and the site's freshness/privacy requirements. Reranking, query
 rewriting, tokenizer-based total prompt budgeting, full parent-child hierarchy,
 atomic index migrations and autonomous/write agents remain future work, not implemented settings.
+
+For 1.6.0, all 156 existing database checks passed again alongside 24 bridge
+checks (21 contracts/cache/selection plus three actual PHP/FastAPI/LangGraph
+HTTP checks), totaling 180. Service 0.2.0 passed 55 Python tests, including
+draft/publication isolation, concurrent revision conflicts, permissions,
+credential revocation and prior-database upgrade. Builder browser smoke covered
+draft/publication, evidence preview, explicit synthetic staff read, mobile layout
+and no persistent browser credential storage. No live CRM/social qualification
+or autonomous write/marketing workflow testing is implied.

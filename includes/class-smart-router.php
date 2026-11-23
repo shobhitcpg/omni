@@ -69,6 +69,13 @@ class Smart_Router {
 
 		// 3. Response cache.
 		$ttl = (int) Settings::get( 'cache_ttl', 0 );
+		$providers = self::candidates( $mode );
+		foreach ( $providers as $provider ) {
+			if ( ! $provider->allows_response_cache() ) {
+				$ttl = 0;
+				break;
+			}
+		}
 		if ( $ctx['cache_key'] && $ttl > 0 ) {
 			$cached = get_transient( $ctx['cache_key'] );
 			if ( is_array( $cached ) && ! empty( $cached['reply'] ) ) {
@@ -84,7 +91,7 @@ class Smart_Router {
 		}
 
 		// 4. Providers.
-		foreach ( self::candidates( $mode ) as $provider ) {
+		foreach ( $providers as $provider ) {
 			$reservation = Request_Budget::provider( $provider->id(), $provider->daily_limit() );
 			if ( is_wp_error( $reservation ) ) {
 				$attempts[] = array(

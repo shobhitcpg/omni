@@ -10,6 +10,8 @@ use OmniThreadAI\Settings;
 use OmniThreadAI\Site_Context;
 use OmniThreadAI\Providers\Registry;
 use OmniThreadAI\Providers\Agent_Service;
+use OmniThreadAI\Crypto;
+use OmniThreadAI\Smart_Router;
 
 $errors = 0;
 $checks = 0;
@@ -58,6 +60,7 @@ try {
 	agent_check( $params['context'] === $call['body']['context'] && 'education' === $call['body']['site']['industry']
 		&& false === strpos( $call['args']['body'], 'Internal instructions' ), 'bridge sends approved context and current question, not internal prompts or account identity' );
 	agent_check( ! $call['body']['diagnostic'], 'normal chat is not mislabeled as a connectivity test' );
+	agent_check( ! isset( $call['body']['agent_id'] ), 'blank agent selection preserves the server tenant default' );
 	$provider->chat( $messages, array_merge( $params, array( 'diagnostic' => true ) ) );
 	agent_check( true === $calls[1]['body']['diagnostic'], 'explicit provider test can authenticate without inference or connector calls' );
 	$before = count( $calls );
@@ -66,15 +69,34 @@ try {
 		array( 'base_url' => 'https://user:password@agents.example' ),
 		array( 'base_url' => 'https://agents.example?token=secret' ),
 		array( 'site_key' => "bad\r\nkey" ),
+		array( 'agent_id' => '../../staff' ),
 	) as $invalid ) {
 		$bad = Registry::make( 'agent_service', array_merge( $config, $invalid ) );
 		agent_check( is_wp_error( $bad->chat( $messages, $params ) ), 'invalid/unapproved bridge configuration is explicitly rejected' );
 	}
 	agent_check( $before === count( $calls ), 'rejected configurations make no outbound requests' );
+	$selected = Registry::make( 'agent_service', array_merge( $config, array( 'agent_id' => 'public-support' ) ) );
+	$selected->chat( $messages, $params );
+	agent_check( 'public-support' === $calls[ count( $calls ) - 1 ]['body']['agent_id'], 'configured agent ID is sent server-side for tenant/published/audience validation' );
 	agent_check( is_wp_error( $provider->chat( $messages, array( 'context' => str_repeat( 'x', 24001 ) ) ) ), 'oversized evidence fails explicitly rather than silently truncating' );
 	$response = array( 'text' => array( 'invalid' ), 'model' => 'bad' );
 	agent_check( is_wp_error( $provider->chat( $messages, $params ) ), 'invalid upstream answer types are rejected' );
 	agent_check( array() === \OmniThreadAI\Smart_Router::candidates( 'local_only' ), 'optional service never changes local-only routing' );
+	$response = array( 'text' => 'Synthetic current answer.', 'model' => 'synthetic-agent' );
+	$settings['local_first'] = 0;
+	$settings['providers']['agent_service'] = array_merge( $config, array( 'site_key' => Crypto::encrypt( $config['site_key'] ) ) );
+	Settings::flush();
+	$cache_key = 'otai_agent_cache_test_' . wp_generate_uuid4();
+	set_transient( $cache_key, array( 'reply' => 'Stale published answer.' ), 60 );
+	$before = count( $calls );
+	$ctx = array( 'query' => 'Synthetic agent policy', 'messages' => $messages, 'params' => $params,
+		'cache_key' => $cache_key, 'chunks' => array( array( 'title' => 'Synthetic evidence', 'url' => '', 'content' => 'Synthetic evidence', 'score' => 1 ) ) );
+	$first = Smart_Router::route( $ctx );
+	$second = Smart_Router::route( $ctx );
+	agent_check( count( $calls ) === $before + 2 && ! is_wp_error( $first ) && ! is_wp_error( $second )
+		&& 'llm' === $first['source'] && 'llm' === $second['source'],
+		'agent routing bypasses old/new WordPress response cache so central changes are checked on each remote turn' );
+	delete_transient( $cache_key );
 	$live = getenv( 'OTAI_TEST_AGENT_URL' );
 	if ( $live ) {
 		if ( 'http://127.0.0.1:19308' !== $live ) {
@@ -86,6 +108,12 @@ try {
 		agent_check( ! is_wp_error( $result ) && 'evidence-extract' === $result['model'] && false !== strpos( $result['text'], '09:00' ), 'actual PHP-to-FastAPI-to-LangGraph HTTP roundtrip returns supplied site evidence' );
 		$result = $provider->chat( $messages, array( 'diagnostic' => true ) );
 		agent_check( ! is_wp_error( $result ) && 'bridge-diagnostic' === $result['model'], 'actual service diagnostic authenticates without model credentials' );
+		$selected_id = getenv( 'OTAI_TEST_AGENT_ID' );
+		if ( $selected_id ) {
+			$provider = Registry::make( 'agent_service', array_merge( $config, array( 'base_url' => $live, 'agent_id' => $selected_id ) ) );
+			$result = $provider->chat( $messages, $params );
+			agent_check( ! is_wp_error( $result ) && 'evidence-extract' === $result['model'], 'actual WordPress bridge selects a centrally published public agent' );
+		}
 	}
 } catch ( Throwable $error ) {
 	++$errors;
