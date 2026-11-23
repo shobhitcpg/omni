@@ -119,7 +119,7 @@
 				post('otai_reindex', { offset: offset })
 					.done(function (res) {
 						if (!res || !res.success) {
-							$status.text('Error');
+							$status.text((res && res.data && res.data.message) || 'Error');
 							$btn.prop('disabled', false);
 							return;
 						}
@@ -135,7 +135,7 @@
 						}
 					})
 					.fail(function (xhr) {
-						$status.text('HTTP ' + xhr.status);
+						$status.text((xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) || ('HTTP ' + xhr.status));
 						$btn.prop('disabled', false);
 					});
 			})(0);

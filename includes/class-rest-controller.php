@@ -83,7 +83,7 @@ class Rest_Controller {
 	 * Public endpoint: guarded by enable switch, same-origin check and rate limiting instead of capabilities.
 	 */
 	public static function public_permission( \WP_REST_Request $request ) {
-		if ( ! Settings::get( 'enabled' ) ) {
+		if ( ! Setup::published() && ! current_user_can( Admin::capability() ) ) {
 			return new \WP_Error( 'otai_disabled', __( 'The assistant is currently disabled.', 'omnithread-ai' ), array( 'status' => 403 ) );
 		}
 		if ( Settings::get( 'strict_origin' ) && ! self::origin_allowed( $request ) ) {

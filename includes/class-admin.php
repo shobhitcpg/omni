@@ -82,6 +82,7 @@ class Admin {
 	}
 
 	public static function action_links( $links ) {
+		array_unshift( $links, '<a href="' . esc_url( Setup::url() ) . '">' . esc_html__( 'Setup', 'omnithread-ai' ) . '</a>' );
 		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=' . self::SLUG . '-settings' ) ) . '">' . esc_html__( 'Settings', 'omnithread-ai' ) . '</a>' );
 		return $links;
 	}
@@ -350,7 +351,7 @@ class Admin {
 
 				<div class="otai-panel-box">
 					<h2><?php esc_html_e( 'Playground', 'omnithread-ai' ); ?></h2>
-					<p class="description"><?php esc_html_e( 'Test the full pipeline with current saved settings. Admin requests show which source and provider answered.', 'omnithread-ai' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Test saved settings, including while unpublished. Authenticated administrators can preview here; visitors cannot. Tests may call your configured AI services and incur charges.', 'omnithread-ai' ); ?></p>
 					<div id="otai-playground-log" class="otai-playground-log"></div>
 					<form id="otai-playground" class="otai-playground">
 						<input type="text" class="large-text" placeholder="<?php esc_attr_e( 'Ask something a visitor would ask…', 'omnithread-ai' ); ?>" required>
@@ -1037,6 +1038,9 @@ class Admin {
 		self::verify_ajax();
 		$id     = isset( $_POST['provider'] ) ? sanitize_key( wp_unslash( $_POST['provider'] ) ) : '';
 		$result = self::test_provider( $id );
+		if ( $id === Settings::get( 'primary_provider' ) ) {
+			Setup::record_test( 'provider', $result );
+		}
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
@@ -1051,7 +1055,12 @@ class Admin {
 	public static function ajax_reindex() {
 		self::verify_ajax();
 		$offset = isset( $_POST['offset'] ) ? absint( $_POST['offset'] ) : 0;
-		wp_send_json_success( Knowledge_Base::reindex_batch( $offset, 25 ) );
+		$result = Knowledge_Base::reindex_batch( $offset, 25 );
+		if ( is_wp_error( $result ) ) {
+			RAG::error( $result );
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
+		}
+		wp_send_json_success( $result );
 	}
 
 	public static function ajax_test_search_engine() {
@@ -1127,6 +1136,9 @@ class Admin {
 				break;
 			default:
 				wp_send_json_error( array( 'message' => __( 'Unknown pipeline operation.', 'omnithread-ai' ) ), 400 );
+		}
+		if ( in_array( $operation, array( 'embedding', 'backend' ), true ) ) {
+			Setup::record_test( $operation, $result );
 		}
 		if ( is_wp_error( $result ) || false === $result ) {
 			$error = is_wp_error( $result ) ? $result : new \WP_Error( 'otai_rag_action', __( 'Cannot update pipeline jobs.', 'omnithread-ai' ) );

@@ -135,6 +135,8 @@ abstract class Base_Provider {
 				'headers'     => array_merge( array( 'Content-Type' => 'application/json' ), $headers ),
 				'body'        => wp_json_encode( $body ),
 				'data_format' => 'body',
+				'redirection' => 0,
+				'sslverify'   => true,
 				'user-agent'  => 'OmniThreadAI/' . OTAI_VERSION . '; ' . home_url( '/' ),
 			)
 		);

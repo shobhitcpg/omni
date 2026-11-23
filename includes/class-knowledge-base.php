@@ -359,8 +359,8 @@ class Knowledge_Base {
 			RAG::error( $result );
 			return $result;
 		}
-		if ( $sync ) {
-			Index_Queue::enqueue( 0 );
+		if ( $sync && ! Index_Queue::enqueue( 0 ) ) {
+			return new \WP_Error( 'otai_queue_storage', __( 'Manual knowledge could not be queued. Check database permissions and retry.', 'omnithread-ai' ) );
 		}
 		return count( $faqs ) + count( $rows );
 	}
@@ -401,16 +401,23 @@ class Knowledge_Base {
 	/**
 	 * Batch (re)index for the admin progress bar / WP-CLI.
 	 *
-	 * @return array [ processed, total, done ].
+	 * @return array|\WP_Error [ processed, total, done ] or an explicit queue/storage failure.
 	 */
 	public static function reindex_batch( $offset = 0, $batch = 25 ) {
 		global $wpdb;
 		$types = self::indexable_post_types();
 		if ( 0 === (int) $offset ) {
-			self::index_manual_entries();
-			Index_Queue::retry();
+			$manual = self::index_manual_entries();
+			if ( is_wp_error( $manual ) ) {
+				return $manual;
+			}
+			if ( false === Index_Queue::retry() ) {
+				return new \WP_Error( 'otai_queue_storage', __( 'Cannot reset failed jobs for this rebuild.', 'omnithread-ai' ) );
+			}
 		}
 		if ( ! $types ) {
+			delete_option( 'otai_needs_index' );
+			update_option( 'otai_last_queued', time(), false );
 			return array(
 				'processed' => 0,
 				'total'     => 0,
@@ -432,8 +439,13 @@ class Knowledge_Base {
 				'suppress_filters'       => true,
 			)
 		);
+		if ( $wpdb->last_error ) {
+			return new \WP_Error( 'otai_index_storage', __( 'Cannot read source posts for the rebuild.', 'omnithread-ai' ) );
+		}
 		foreach ( $query->posts as $post ) {
-			Index_Queue::enqueue( $post->ID );
+			if ( ! Index_Queue::enqueue( $post->ID ) ) {
+				return new \WP_Error( 'otai_queue_storage', __( 'Not all source posts could be queued. Correct the database problem and restart the rebuild.', 'omnithread-ai' ) );
+			}
 		}
 		$processed = (int) $offset + count( $query->posts );
 		$total     = (int) $query->found_posts;

@@ -17,6 +17,31 @@ defined( 'ABSPATH' ) || exit;
 class CLI {
 
 	/**
+	 * Run local readiness checks without calling AI or search services.
+	 *
+	 * @subcommand readiness
+	 */
+	public function readiness() {
+		$checks = Setup::checks();
+		\WP_CLI\Utils\format_items( 'table', $checks, array( 'id', 'status', 'remedy' ) );
+		foreach ( $checks as $check ) {
+			if ( 'blocked' === $check['status'] ) {
+				\WP_CLI::error( 'Readiness is blocked. Resolve the checks shown above.' );
+			}
+		}
+		\WP_CLI::success( 'No blocking configuration checks. Review warnings and validate answer quality before launch.' );
+	}
+
+	/**
+	 * Print an allowlisted support report without secrets or site content.
+	 *
+	 * @subcommand support
+	 */
+	public function support() {
+		\WP_CLI::line( wp_json_encode( Setup::report(), JSON_PRETTY_PRINT ) );
+	}
+
+	/**
 	 * Show configuration, providers and knowledge-base status.
 	 *
 	 * @subcommand status
@@ -59,6 +84,9 @@ class CLI {
 		$offset = 0;
 		do {
 			$result = Knowledge_Base::reindex_batch( $offset, $batch );
+			if ( is_wp_error( $result ) ) {
+				\WP_CLI::error( $result->get_error_message() );
+			}
 			$offset = $result['processed'];
 			\WP_CLI::log( sprintf( 'Queued %d / %d', $result['processed'], $result['total'] ) );
 		} while ( ! $result['done'] );

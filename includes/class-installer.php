@@ -14,6 +14,9 @@ class Installer {
 	const CRON_HOOK = 'otai_daily_maintenance';
 
 	public static function activate( $network_wide = false ) {
+		if ( ! function_exists( 'mb_strtolower' ) || ! Crypto::available() ) {
+			wp_die( esc_html__( 'OmniThread AI requires mbstring and OpenSSL. Ask your host to enable these PHP extensions, then activate again.', 'omnithread-ai' ) );
+		}
 		if ( is_multisite() && $network_wide ) {
 			foreach ( get_sites(
 				array(
@@ -105,9 +108,16 @@ class Installer {
 			$defaults = array_merge(
 				Settings::defaults(),
 				array( 'vertical' => $vertical ),
-				Verticals::recommended_settings( $vertical )
+				Verticals::recommended_settings( $vertical ),
+				array( 'enabled' => 0, 'display' => 'shortcode_only', 'mode' => 'local_only', 'store_conversations' => 0 )
 			);
+			add_option( 'otai_setup_required', 1, '', false );
 			add_option( Settings::OPTION, $defaults, '', false );
+			if ( ! get_option( 'otai_setup_required' ) || false === get_option( Settings::OPTION, false ) ) {
+				$error = new \WP_Error( 'otai_setup_storage', __( 'Cannot persist the initial unpublished setup state. Check database permissions and reactivate.', 'omnithread-ai' ) );
+				RAG::error( $error );
+				return $error;
+			}
 			update_option( 'otai_needs_index', 1, false );
 		}
 

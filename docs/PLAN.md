@@ -9,6 +9,10 @@ queue and Elasticsearch/OpenSearch hybrid RAG. See [RAG operations](RAG-OPERATIO
 for setup, validation and explicit release limitations; this product plan is not
 a production-readiness certification.
 
+Version 1.4.0 adds standalone BYOK customer onboarding, safe first installation,
+explicit launch, Site Health/support diagnostics and clean ZIP packaging.
+See [Customer setup](CUSTOMER-SETUP.md) and [Commercial release gates](COMMERCIAL-RELEASE.md).
+
 ---
 
 ## 1. Goals

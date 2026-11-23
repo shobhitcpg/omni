@@ -1,7 +1,9 @@
-# RAG operations (1.3.0)
+# RAG operations (1.3.0 core, 1.4.0 customer setup)
 
 The plugin implements incremental RAG, not autonomous agents. It remains
 theme-independent; keyword-only mode needs no embedding service.
+For first installation and the new explicit publication flow, start with
+[Customer setup](CUSTOMER-SETUP.md).
 
 ## Models and setup
 
@@ -140,11 +142,15 @@ Verified for this build:
 
 | Validation | Result |
 | --- | --- |
+| Customer onboarding, publication, support/permissions and generation HTTP contracts (1.4.0) | 34 checks passed |
 | WordPress/MySQL integration and mocked provider/backend contracts | 49 checks passed |
 | Schema, scheduling and opt-in uninstall lifecycle | 7 checks passed |
 | Real Elasticsearch 8.19.4 indexing/retrieval/update/deletion | 9 checks passed |
 | Real OpenSearch 2.19.0 indexing/retrieval/update/deletion | 9 checks passed |
 
+The real-backend suites were run for the 1.3.0 RAG implementation; the 1.4.0
+onboarding/rebuild/provider-contract changes were checked with the isolated
+WordPress/MySQL suites, not a second real-backend run.
 Both real-backend suites used deterministic synthetic embeddings. No live
 OpenAI/Azure/Ollama embedding or generation model was tested, and the declared
 minimum backend versions were not all exercised.

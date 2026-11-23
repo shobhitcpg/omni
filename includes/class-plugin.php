@@ -50,6 +50,7 @@ class Plugin {
 		if ( is_admin() ) {
 			Admin::register();
 		}
+		Setup::register();
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WP_CLI' ) ) {
 			\WP_CLI::add_command( 'omnithread-ai', 'OmniThreadAI\\CLI' );
 		}
@@ -70,7 +71,7 @@ class Plugin {
 		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
 			return;
 		}
-		$content = '<p>' . __( 'This site uses an AI chat assistant. Messages you type are processed to generate answers and may be sent to a third-party AI provider configured by the site owner. Obvious personal data (emails, phone and card numbers) is automatically removed before messages are sent. Conversation transcripts may be stored for quality purposes and are automatically deleted after the configured retention period.', 'omnithread-ai' ) . '</p>';
+		$content = '<p>' . __( 'This site uses an AI chat assistant. Depending on the site owner configuration, messages and relevant site content may be processed by configured search, embedding and answer-model services, including third-party providers. Optional pattern-based redaction can remove some personal data but does not guarantee anonymisation. Conversation storage and retention depend on the site owner settings. Review and adapt this disclosure to name your providers, processing locations, purposes, retention and applicable rights before publishing it.', 'omnithread-ai' ) . '</p>';
 		wp_add_privacy_policy_content( 'OmniThread AI', wp_kses_post( $content ) );
 	}
 

@@ -4,7 +4,7 @@ Tags: ai, chatbot, openai, gemini, ollama
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,13 +26,17 @@ OmniThread AI adds a grounded AI assistant to any WordPress site – independent
 
 **Security and operations controls** – encrypted API keys (or `wp-config.php` constants), PII redaction, rate limiting, same-origin checks, retention policies, GDPR exporter/eraser, usage analytics, conversation review with 👍/👎 feedback, multisite, WP-CLI and many filters. These controls are not a compliance or production-readiness certification; deployment-specific access connectors and load/answer-quality evaluation are required.
 
+**Customer setup** – standalone BYOK with no mandatory seller account. New installations remain unpublished until explicit launch, use shortcode-only/local-only defaults and do not store transcripts by default. Setup & Readiness guides industry, provider and display choices, checks prerequisites and indexing, records explicit service tests, integrates WordPress Site Health and downloads a secret-free support report. Existing installations retain their publication/settings choices.
+
 == Installation ==
 
 1. Upload the `omnithread-ai` folder to `/wp-content/plugins/` and activate.
-2. Go to **OmniThread AI → Settings**: pick your industry and click *Save & apply recommended settings*.
-3. **AI Providers**: enable at least one provider (or choose *Local only* on Smart Routing) and click *Test connection*.
+2. Go to **OmniThread AI → Setup & Readiness**: choose local site search or BYOK, your industry and display. New installs are unpublished until you explicitly launch.
+3. For BYOK, **AI Providers**: enable/configure your chosen primary provider and test it. Local search needs no AI service. Review public-source rules, external processing and privacy/retention.
 4. **Knowledge Base**: click *Rebuild knowledge base* to queue indexing. WordPress cron processes jobs; **RAG Pipeline → Process pending jobs** or WP-CLI can run them immediately. Add FAQ entries for instant, free answers.
-5. Try it in the Dashboard *Playground* or on your site.
+5. Try real questions in the administrator Dashboard *Playground* while unpublished, resolve blocked setup checks, then click **Publish assistant**. Add the shortcode to a page if using shortcode-only display.
+
+See `docs/CUSTOMER-SETUP.md` for the full customer guide, manual ZIP updates and support. This edition does not include managed AI infrastructure, model credits, license-key activation or an automatic updater. Use maintained PHP (8.3+ recommended); mbstring and OpenSSL are required on activation.
 
 = Self-hosting with Ollama =
 
@@ -75,6 +79,8 @@ Pattern: `OTAI_{PROVIDER}_{FIELD}` (e.g. `OTAI_GEMINI_API_KEY`, `OTAI_AZURE_OPEN
 = WP-CLI =
 
     wp omnithread-ai status
+    wp omnithread-ai readiness
+    wp omnithread-ai support
     wp omnithread-ai reindex
     wp omnithread-ai work --limit=5
     wp omnithread-ai ask "What is your return policy?"
@@ -97,6 +103,15 @@ Pattern: `OTAI_{PROVIDER}_{FIELD}` (e.g. `OTAI_GEMINI_API_KEY`, `OTAI_AZURE_OPEN
 * `otai_show_widget`, `otai_allowed_origins`, `otai_client_ip`, `otai_redact_patterns`, `otai_capability`.
 
 == Changelog ==
+
+= 1.4.0 =
+* Added customer Setup & Readiness, explicit first-run publication and authenticated administrator preview while unpublished.
+* New installs default to local-only, shortcode-only and transcript storage off; upgrades preserve existing settings.
+* Added configuration-bound expiring connection-test records, WordPress Site Health and allowlisted support downloads.
+* Added CLI readiness/support and clean ZIP packaging without developer tests/tools.
+* Rebuild storage/queue failures now surface explicitly; FAQ-only sites can complete onboarding.
+* Generation requests verify TLS and do not follow credential-bearing redirects.
+* Added customer installation/update instructions and an explicit commercial-release acceptance checklist.
 
 = 1.3.0 =
 * Implemented separate embedding adapters, persistent compatible cache and an atomic daily text-input budget.

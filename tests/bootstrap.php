@@ -14,6 +14,12 @@ if ( 'cli' !== PHP_SAPI || '127.0.0.1:19306' !== $host || ! $core || ! is_file( 
 $mysqli = new mysqli( '127.0.0.1', 'root', '', '', 19306 );
 $mysqli->query( 'CREATE DATABASE IF NOT EXISTS otai_rag_test CHARACTER SET utf8mb4' );
 $mysqli->close();
+$_SERVER['HTTP_HOST'] = 'otai-tests.invalid';
+$_SERVER['SERVER_NAME'] = 'otai-tests.invalid';
+$_SERVER['REQUEST_URI'] = '/wp-admin/install.php';
+$_SERVER['PHP_SELF'] = '/wp-admin/install.php';
+$_SERVER['SCRIPT_NAME'] = '/wp-admin/install.php';
+$_SERVER['REQUEST_METHOD'] = 'GET';
 define( 'ABSPATH', rtrim( $core, '\\/' ) . DIRECTORY_SEPARATOR );
 define( 'DB_NAME', 'otai_rag_test' );
 define( 'DB_USER', 'root' );

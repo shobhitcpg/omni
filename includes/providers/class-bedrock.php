@@ -85,6 +85,8 @@ class Bedrock extends Base_Provider {
 				'headers'     => $headers,
 				'body'        => $json,
 				'data_format' => 'body',
+				'redirection' => 0,
+				'sslverify'   => true,
 			)
 		);
 		$data = $this->decode_response( $response );

@@ -24,7 +24,7 @@ class Frontend {
 	 * Global checks shared by the floating bubble and the shortcode.
 	 */
 	public static function is_allowed_here() {
-		if ( ! Settings::get( 'enabled' ) || is_admin() || is_feed() || wp_is_json_request() ) {
+		if ( ! Setup::published() || is_admin() || is_feed() || wp_is_json_request() ) {
 			return false;
 		}
 		$visibility = Settings::get( 'visibility', 'all' );
