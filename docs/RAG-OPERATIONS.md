@@ -1,7 +1,9 @@
-# RAG operations (1.4.2)
+# RAG operations (1.5.0)
 
-The plugin implements incremental RAG, not autonomous agents. It remains
+The plugin implements incremental RAG, not autonomous write agents. It remains
 theme-independent; keyword-only mode needs no embedding service.
+An optional separate agent runtime is described in [Agent service](AGENT-SERVICE.md);
+it does not change public RAG access rules or grant staff connector access.
 For first installation and the new explicit publication flow, start with
 [Customer setup](CUSTOMER-SETUP.md).
 
@@ -135,6 +137,7 @@ php tests/setup-integration.php
 php tests/release-integration.php
 php tests/privacy-integration.php
 php tests/grants-integration.php
+php tests/agent-integration.php
 ```
 
 For real multisite, prepare the separate network database once using
@@ -218,6 +221,13 @@ browser chat storage, and run `php tests/browser-fixture.php clean`. The router
 requires the dedicated database/port, blocks outbound WordPress HTTP, and never
 uses the live site's configuration. Test/router files are excluded from ZIPs.
 
+For 1.5.0, all 156 database checks above passed again. The new bridge passed
+17 contract checks plus two actual PHP/FastAPI/LangGraph HTTP checks, making
+175 checks in the complete run. Both PHP/JavaScript syntax checks passed.
+The separately deployed Python runtime passed 34 isolated tests; its CRM/MCP
+tests use synthetic contracts, not authorized live accounts. The 1.4.2 browser
+smoke checks were not repeated as a full browser matrix for this provider addition.
+
 The real-backend suites were run for the 1.3.0 RAG implementation; later
 onboarding/rebuild/provider-contract/request-limit changes were checked with the isolated
 WordPress/MySQL suites, not a second real-backend run.
@@ -229,4 +239,4 @@ Before an enterprise production rollout, validate the actual embedding and answe
 models, semantic relevance/abstention, sustained deployment load, host backups, outage recovery,
 membership ACLs and the site's freshness/privacy requirements. Reranking, query
 rewriting, tokenizer-based total prompt budgeting, full parent-child hierarchy,
-atomic index migrations and agents remain future work, not implemented settings.
+atomic index migrations and autonomous/write agents remain future work, not implemented settings.

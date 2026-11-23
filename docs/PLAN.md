@@ -23,6 +23,12 @@ Real multisite, concurrent offline pipelines, database-grant recovery, SQL resto
 and a standard-theme browser smoke fixture now have measured evidence; the
 commercial checklist distinguishes this evidence from untested deployment claims.
 
+Version 1.5.0 adds an optional separately deployed FastAPI/LangGraph bridge with
+public site context. Staff-only read connectors and MCP allowlists are isolated
+from visitor chat; the plugin still requires no Python runtime.
+See [Agent service](AGENT-SERVICE.md). This is not autonomous write execution or
+a finished CRM/social OAuth connection marketplace.
+
 ---
 
 ## 1. Goals

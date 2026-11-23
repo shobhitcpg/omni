@@ -78,6 +78,7 @@ class Registry {
 				),
 			),
 			'omnithread'   => array( OmniThread::class, 'OmniThread AI Backend' ),
+			'agent_service' => array( Agent_Service::class, 'Agent Service (FastAPI / LangGraph)' ),
 		);
 
 		/**

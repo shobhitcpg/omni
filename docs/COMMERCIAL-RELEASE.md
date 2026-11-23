@@ -24,6 +24,7 @@ unlimited scale, HIPAA/GDPR compliance or fully autonomous agents.
 | Restricted-content defaults | Recognised membership/LMS systems deny post sources without a connector; custom systems must register, shared index permits anonymous-public content only |
 | Privacy operations | Bounded personal-data export/erasure, explicit database errors, retention and opt-in transcript storage |
 | Operations | Site Health, configuration-bound test records, CLI readiness/worker/support |
+| Optional agent bridge (1.5.0) | Public site profile/context to separately deployed FastAPI/LangGraph service; tenant-specific configuration; staff read tools isolated from visitor chat |
 | Customer support | Allowlisted opt-in download; no automatic diagnostic uploads |
 | Distribution | Clean ZIP excludes tests/tools; standard WordPress upload/replace |
 | Data ownership | Retained on deactivation/default uninstall; explicit local-data deletion option |
@@ -52,7 +53,8 @@ are real work, not features that a synthetic test can certify:
 - Reranking, query rewriting and a full parent-child section hierarchy.
 - Tokenizer-based total prompt accounting and calibrated semantic abstention.
 - Atomic shadow-index activation/rollback and automated old-profile cleanup.
-- Broad membership connectors, SSO/tenant administration, agent/tool execution.
+- Broad membership connectors, SSO administration, autonomous agent/write execution.
+- One-click external OAuth onboarding and live-qualified CRM/social connectors.
 - Managed infrastructure, license verification, a sales portal or automatic updater.
 
 Not every advanced capability is mandatory for a small public FAQ site. Their
@@ -64,7 +66,7 @@ need deployment-specific acceptance rather than a universal "enterprise" label.
 From the repository on Windows:
 
 ```powershell
-.\plugins\omnithread-ai\tools\package.ps1 -Destination 'C:\releases\omnithread-ai-1.4.2.zip'
+.\plugins\omnithread-ai\tools\package.ps1 -Destination 'C:\releases\omnithread-ai-1.5.0.zip'
 ```
 
 Use a new destination outside the source tree. The tool copies only runtime
@@ -74,7 +76,10 @@ SHA-256 checksum and removes its staging files. It does not publish or upload.
 
 Run the isolated validation runner described in [RAG operations](RAG-OPERATIONS.md).
 The current offline database suites and SQL restoration drill passed 156 checks;
-17 browser assertions and two actual local HTTP checks passed separately.
+17 browser assertions and two actual local HTTP checks passed separately for 1.4.2.
+Version 1.5.0 adds 17 bridge contract checks plus two actual PHP/FastAPI/LangGraph
+HTTP checks; the separate service has 34 Python contract tests. These do not
+qualify real CRM/social accounts or hosted service operation.
 Setup tests cover safe first install,
 publication gating, FAQ-only onboarding, explicit rebuild failures, credential
 preservation, test invalidation/expiry, support-report allowlisting and permissions.

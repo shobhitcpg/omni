@@ -4,7 +4,7 @@ Tags: ai, chatbot, openai, gemini, ollama
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,8 @@ OmniThread AI adds a grounded AI assistant to any WordPress site – independent
 **Customer setup** – standalone BYOK with no mandatory seller account. New installations remain unpublished until explicit launch, use shortcode-only/local-only defaults and do not store transcripts by default. Setup & Readiness guides industry, provider and display choices, checks prerequisites and indexing, records explicit service tests, integrates WordPress Site Health and downloads a secret-free support report. Existing installations retain their publication/settings choices.
 
 **Restricted-content safety** – recognised active membership/LMS systems block post indexing and post-based answers unless an explicit anonymous-public-content connector is registered. Curated FAQs/custom knowledge remain available. Recognition is not universal: custom/MU restrictions must register through `otai_access_systems`. This is a shared public index, not a per-member assistant.
+
+**Optional agent service** – opt-in bridge to a separately deployed FastAPI/LangGraph runtime, sending an allowlisted public site profile and approved context. Python is not a plugin dependency. Staff-only read connectors are isolated from visitor chat; social/marketing integrations remain planned, not advertised as connected. See `docs/AGENT-SERVICE.md`.
 
 == Installation ==
 
@@ -105,6 +107,12 @@ Pattern: `OTAI_{PROVIDER}_{FIELD}` (e.g. `OTAI_GEMINI_API_KEY`, `OTAI_AZURE_OPEN
 * `otai_show_widget`, `otai_allowed_origins`, `otai_client_ip`, `otai_redact_patterns`, `otai_capability`.
 
 == Changelog ==
+
+= 1.5.0 =
+* Added optional FastAPI/LangGraph agent-service provider with explicit outbound consent, public site profile, independent site credential and strict response contract.
+* Added authentication-only service diagnostics, HTTPS enforcement and bounded context; local-only behavior is unchanged.
+* Separate server code provides per-tenant instructions/models, read-only HubSpot/Zoho Desk adapters and an operator-allowlisted MCP client. The server is not bundled into this plugin ZIP.
+* Staff credentials/tools are not accessible through visitor chat. OAuth onboarding, social publishing and autonomous write actions are not shipped.
 
 = 1.4.2 =
 * Added fail-closed post-source defaults for recognised membership/LMS systems, setup blocking and administrator warnings without an access connector.

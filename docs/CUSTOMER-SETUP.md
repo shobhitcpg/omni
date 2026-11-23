@@ -17,6 +17,10 @@
 The plugin does not install server software or download models without approval.
 You can start with database search and add AI/vector services later.
 
+For client-specific agents hosted separately, see [Optional agent service](AGENT-SERVICE.md).
+It requires separate deployment and explicit outbound consent; it is not enabled
+by activation, and public chat cannot use staff CRM/MCP credentials.
+
 ## First installation
 
 1. In WordPress, **Plugins > Add New > Upload Plugin**, upload the supplied ZIP

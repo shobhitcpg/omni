@@ -1029,6 +1029,7 @@ class Admin {
 				'max_tokens'  => 256,
 				'timeout'     => (int) Settings::get( 'timeout', 30 ),
 				'session'     => 'test-' . get_current_user_id(),
+				'diagnostic'  => true,
 			)
 		);
 		Usage::log( array(

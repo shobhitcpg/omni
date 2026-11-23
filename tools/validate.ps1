@@ -58,7 +58,7 @@ try {
         Write-Output "PASS JavaScript syntax: $($file.Name)"
     }
     foreach ($suite in @('budget-integration', 'setup-integration', 'rag-integration', 'rag-lifecycle',
-        'release-integration', 'privacy-integration', 'grants-integration')) {
+        'release-integration', 'privacy-integration', 'grants-integration', 'agent-integration')) {
         Invoke-CheckedPHP $suite
     }
     Invoke-CheckedPHP 'restore-fixture' @('seed')
