@@ -1,0 +1,65 @@
+.otai-wrap h1 .otai-badge { font-size: 12px; vertical-align: middle; background: #2271b1; color: #fff; padding: 3px 10px; border-radius: 12px; margin-left: 8px; font-weight: 500; }
+.otai-wrap table[hidden] { display: none; }
+.otai-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; margin: 16px 0; }
+.otai-check { display: flex; align-items: center; gap: 6px; padding: 10px 12px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; text-decoration: none; color: #1d2327; }
+.otai-check.is-ok .dashicons { color: #00a32a; }
+.otai-check.is-todo .dashicons { color: #dba617; }
+.otai-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.otai-card { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.otai-card span { color: #646970; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.otai-card strong { font-size: 24px; line-height: 1.2; }
+.otai-card small { color: #646970; }
+.otai-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 1100px) { .otai-columns { grid-template-columns: 1fr; } }
+.otai-panel-box { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 4px 16px 16px; }
+
+.otai-verticals { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0; }
+.otai-vertical, .otai-mode { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 12px 12px 40px; background: #fff; border: 2px solid #dcdcde; border-radius: 8px; cursor: pointer; }
+.otai-vertical input, .otai-mode input { position: absolute; left: 12px; top: 14px; }
+.otai-vertical .dashicons { position: absolute; right: 10px; top: 10px; color: #8c8f94; }
+.otai-vertical small, .otai-mode small { color: #646970; }
+.otai-vertical.is-selected, .otai-mode.is-selected { border-color: #2271b1; background: #f0f6fc; }
+.otai-detected { font-style: normal; font-size: 11px; color: #fff; background: #00a32a; padding: 1px 6px; border-radius: 8px; align-self: flex-start; }
+.otai-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+
+.otai-providers { display: grid; gap: 12px; }
+.otai-provider { background: #fff; border: 1px solid #dcdcde; border-left: 4px solid #dcdcde; border-radius: 6px; padding: 8px 16px; }
+.otai-provider.is-enabled { border-left-color: #00a32a; }
+.otai-provider-head { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.otai-provider .form-table th { width: 220px; padding: 10px 10px 10px 0; }
+.otai-provider .form-table td { padding: 8px 10px; }
+.otai-pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f0f0f1; color: #50575e; }
+.otai-pill--ok { background: #edfaef; color: #00701a; }
+.otai-pill--free { background: #f0f6fc; color: #135e96; }
+.otai-test-result.is-error { color: #b32d2e; }
+
+.otai-order { margin: 0; max-width: 420px; }
+.otai-order li { background: #fff; border: 1px solid #dcdcde; border-radius: 4px; padding: 8px 10px; margin-bottom: 6px; cursor: move; }
+.otai-order li.is-inactive { color: #8c8f94; }
+.otai-order li em { font-size: 12px; }
+.otai-slider { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.otai-slider input[type=range] { width: 260px; }
+.otai-rec { color: #135e96; font-size: 12px; }
+.otai-inline-check { display: inline-block; min-width: 240px; margin: 0 12px 8px 0; }
+.otai-status li { margin-bottom: 6px; }
+
+.otai-progress { height: 8px; background: #f0f0f1; border-radius: 4px; overflow: hidden; max-width: 420px; }
+.otai-progress-bar { height: 100%; width: 0; background: #2271b1; transition: width .2s; }
+.otai-result { border: 1px solid #dcdcde; border-radius: 6px; padding: 8px 10px; margin-top: 8px; }
+.otai-result.is-hit { border-color: #00a32a; background: #f6fff7; }
+
+.otai-playground { display: flex; gap: 8px; margin-top: 8px; }
+.otai-playground-log { max-height: 420px; min-height: 120px; overflow-y: auto; background: #f6f7f7; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.otai-transcript { max-width: 800px; display: flex; flex-direction: column; gap: 10px; }
+.otai-t { max-width: 85%; }
+.otai-t--user { align-self: flex-end; text-align: right; }
+.otai-t-body { display: inline-block; text-align: left; padding: 8px 12px; border-radius: 10px; background: #fff; border: 1px solid #dcdcde; }
+.otai-t--user .otai-t-body { background: #2271b1; color: #fff; border-color: #2271b1; }
+.otai-t-body.is-error { color: #b32d2e; }
+.otai-t-meta { font-size: 11px; color: #646970; margin-top: 2px; }
+
+.otai-wrap tr[hidden]{display:none}
+.otai-code{background:#1e1e1e;color:#e6e6e6;padding:10px 12px;border-radius:4px;overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:12px}
+.otai-engines td{vertical-align:middle}
+.otai-es-install{padding-bottom:6px}
+
