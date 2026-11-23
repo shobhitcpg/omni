@@ -85,7 +85,7 @@ class Knowledge_Base {
 		return $post && 'publish' === $post->post_status && '' === $post->post_password
 			&& in_array( $post->post_type, self::indexable_post_types(), true )
 			&& is_post_publicly_viewable( $post )
-			&& (bool) apply_filters( 'otai_index_post_allowed', true, $post );
+			&& (bool) apply_filters( 'otai_index_post_allowed', Access_Policy::default_allowed(), $post );
 	}
 
 	/**

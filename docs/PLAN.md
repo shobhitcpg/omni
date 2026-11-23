@@ -13,6 +13,16 @@ Version 1.4.0 adds standalone BYOK customer onboarding, safe first installation,
 explicit launch, Site Health/support diagnostics and clean ZIP packaging.
 See [Customer setup](CUSTOMER-SETUP.md) and [Commercial release gates](COMMERCIAL-RELEASE.md).
 
+Version 1.4.1 replaces race-prone request limits with shared atomic reservations,
+includes failed calls/tests in provider attempt caps and fails closed on quota
+storage errors. These caps do not replace provider-side currency spending limits.
+
+Version 1.4.2 adds recognised-access-system fail-closed defaults, fixes blog-bound
+settings caching and paginates privacy requests with explicit storage errors.
+Real multisite, concurrent offline pipelines, database-grant recovery, SQL restore
+and a standard-theme browser smoke fixture now have measured evidence; the
+commercial checklist distinguishes this evidence from untested deployment claims.
+
 ---
 
 ## 1. Goals

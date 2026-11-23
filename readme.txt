@@ -2,9 +2,9 @@
 Contributors: omnithreadai
 Tags: ai, chatbot, openai, gemini, ollama
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,8 @@ OmniThread AI adds a grounded AI assistant to any WordPress site – independent
 **Security and operations controls** – encrypted API keys (or `wp-config.php` constants), PII redaction, rate limiting, same-origin checks, retention policies, GDPR exporter/eraser, usage analytics, conversation review with 👍/👎 feedback, multisite, WP-CLI and many filters. These controls are not a compliance or production-readiness certification; deployment-specific access connectors and load/answer-quality evaluation are required.
 
 **Customer setup** – standalone BYOK with no mandatory seller account. New installations remain unpublished until explicit launch, use shortcode-only/local-only defaults and do not store transcripts by default. Setup & Readiness guides industry, provider and display choices, checks prerequisites and indexing, records explicit service tests, integrates WordPress Site Health and downloads a secret-free support report. Existing installations retain their publication/settings choices.
+
+**Restricted-content safety** – recognised active membership/LMS systems block post indexing and post-based answers unless an explicit anonymous-public-content connector is registered. Curated FAQs/custom knowledge remain available. Recognition is not universal: custom/MU restrictions must register through `otai_access_systems`. This is a shared public index, not a per-member assistant.
 
 == Installation ==
 
@@ -103,6 +105,21 @@ Pattern: `OTAI_{PROVIDER}_{FIELD}` (e.g. `OTAI_GEMINI_API_KEY`, `OTAI_AZURE_OPEN
 * `otai_show_widget`, `otai_allowed_origins`, `otai_client_ip`, `otai_redact_patterns`, `otai_capability`.
 
 == Changelog ==
+
+= 1.4.2 =
+* Added fail-closed post-source defaults for recognised membership/LMS systems, setup blocking and administrator warnings without an access connector.
+* Fixed settings isolation when switching sites in a multisite request.
+* Paginated WordPress personal-data export/erasure and surfaced privacy storage failures; failed deletion does not claim successful erasure.
+* Added real multisite, access revocation, concurrent indexing/chat, privacy, denied database grants, SQL backup/restore and loopback browser fixtures.
+* Added a reproducible offline validation runner and documented measured release evidence and remaining live-provider/commercial gates.
+
+= 1.4.1 =
+* Persistent atomic visitor rate limits and provider attempt caps prevent count-then-call overshoot across PHP workers.
+* Failed generation calls and administrator connectivity tests consume the same provider allowance; no refunds on uncertain upstream outcomes.
+* Daily provider reservations seed from existing usage on upgrade. Request caps are not currency budgets.
+* Explicit 503 on capped-request storage failure; rate-limited REST replies include Retry-After and all plugin REST replies prohibit caching.
+* Disabled providers are no longer selected in single-provider routing. Setup warns about uncapped eligible cloud providers.
+* Database version five adds the request-budget table; maintenance and opt-in uninstall cover it.
 
 = 1.4.0 =
 * Added customer Setup & Readiness, explicit first-run publication and authenticated administrator preview while unpublished.

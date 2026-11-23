@@ -1,4 +1,4 @@
-# RAG operations (1.3.0 core, 1.4.0 customer setup)
+# RAG operations (1.4.2)
 
 The plugin implements incremental RAG, not autonomous agents. It remains
 theme-independent; keyword-only mode needs no embedding service.
@@ -48,9 +48,12 @@ security-disabled examples restricted to loopback development.
 With auto-sync on, post, metadata and taxonomy events enqueue document updates.
 Trash/delete/password/private changes remove local passages immediately and queue
 remote cleanup. Retrieval verifies current visibility and hashes, so remote text
-is never the authority. Arbitrary membership systems require an explicit
-`otai_index_post_allowed` connector; do not deploy this as an enrolment-aware
-assistant without one.
+is never the authority. Recognised membership/LMS systems now deny post indexing
+and retrieval by default without an explicit anonymous-public-content
+`otai_index_post_allowed` connector. Custom/MU restrictions must register through
+`otai_access_systems`. Recognition is not universal; see the access-policy
+requirements in [Customer setup](CUSTOMER-SETUP.md). The shared index is not an
+enrolment-aware private assistant.
 
 Paragraph-aware splitting retains IDs and cached vectors for identical inputs.
 A one-word body edit normally embeds one changed paragraph. Title edits can affect
@@ -88,7 +91,7 @@ wp omnithread-ai work --limit=5
 Reindex queues updates without emptying the live index. Pausing the queue does not
 disable retrieval-time access checks. Network deactivation clears worker schedules
 per site. Uninstall clears schedules and preserves data by default; the existing
-**Delete data on uninstall** setting opts into removal of all seven local tables,
+**Delete data on uninstall** setting opts into removal of all eight local tables,
 local plugin options/transients and widget metadata. Remote search indexes are
 never deleted automatically. Persistent object-cache entries expire by their TTL.
 
@@ -115,12 +118,49 @@ never deleted automatically. Persistent object-cache entries expire by their TTL
 database `otai_rag_test` and a WordPress core directory. It deliberately avoids the
 live site's configuration. Do not run tests against a production database.
 
-Set `OTAI_TEST_WP_CORE` and `OTAI_TEST_DB_HOST=127.0.0.1:19306`, then run:
+Start a dedicated **disposable** loopback MySQL instance on port 19306 with a
+test-only root account and no password. Never point it at the site's data
+directory or expose the port publicly. It creates only `otai_rag_test` and
+`otai_rag_network_test`. The grant suite temporarily creates a SELECT-only account
+on this disposable server and removes it afterward.
+
+For individual suites, set `OTAI_TEST_WP_CORE` and
+`OTAI_TEST_DB_HOST=127.0.0.1:19306`, then run:
 
 ```sh
 php tests/rag-integration.php
 php tests/rag-lifecycle.php
+php tests/budget-integration.php
+php tests/setup-integration.php
+php tests/release-integration.php
+php tests/privacy-integration.php
+php tests/grants-integration.php
 ```
+
+For real multisite, prepare the separate network database once using
+`OTAI_TEST_NETWORK=prepare` with `php tests/network-prepare.php`; then set
+`OTAI_TEST_NETWORK=run` for `php tests/network-integration.php`. Clear that
+environment variable before single-site suites. Do not prepare an existing
+network again.
+
+On Windows, the reproducible runner checks every PHP file, both JavaScript files,
+all single-site suites, an actual mysqldump/mutate/restore/verify drill, and
+optionally the prepared multisite fixture:
+
+```powershell
+.\plugins\omnithread-ai\tools\validate.ps1 `
+    -WordPressCore 'C:\test\wordpress' `
+    -PHPBinary 'C:\test\php\php.exe' `
+    -MySQLBin 'C:\test\mysql\bin' `
+    -NodeBinary 'C:\Program Files\nodejs\node.exe' `
+    -IncludeNetwork
+```
+
+PHP needs mysqli, mbstring, OpenSSL and curl in its sibling `ext` directory.
+The runner requires exit zero **and** a RESULT marker: a WordPress fatal HTML
+page with exit zero is a failure, not a test pass. Stop the browser fixture before
+dump/restore. Only synthetic fixture data is dumped; successful drills remove
+their temporary backup. Interrupted drills retain it with a warning for recovery.
 
 The suite uses real WordPress/MySQL with mocked embedding/search HTTP contracts.
 It verifies incremental reuse, both adapter dialects, leases/generation fencing,
@@ -138,25 +178,55 @@ Only those dedicated loopback ports are permitted by the harness. It exercises
 real vector writes, ANN queries, incremental updates and deletion with synthetic
 embeddings, removing only its randomly named indexes afterward.
 
-Verified for this build:
+Verified for 1.4.2 on Windows, WordPress **6.9.4**, PHP **8.2.29**, MySQL **8.4.0**:
 
 | Validation | Result |
 | --- | --- |
-| Customer onboarding, publication, support/permissions and generation HTTP contracts (1.4.0) | 34 checks passed |
+| Atomic request limits, actual concurrent workers, routing and failure handling | 22 checks passed |
+| Customer onboarding, publication, support/permissions and generation HTTP contracts | 34 checks passed |
 | WordPress/MySQL integration and mocked provider/backend contracts | 49 checks passed |
 | Schema, scheduling and opt-in uninstall lifecycle | 7 checks passed |
-| Real Elasticsearch 8.19.4 indexing/retrieval/update/deletion | 9 checks passed |
-| Real OpenSearch 2.19.0 indexing/retrieval/update/deletion | 9 checks passed |
+| Concurrent queue/chat, lexical evaluation and access revocation | 12 checks passed |
+| Privacy pagination, isolation, erasure, retention and storage outage | 10 checks passed |
+| Actual denied CREATE/ALTER/write grants and schema retry recovery | 6 checks passed |
+| SQL backup, deliberate mutation, restore and state verification | 1 check passed |
+| Actual subdirectory multisite activation, provisioning, isolation and uninstall | 15 checks passed |
+| Database-suite total | 156 checks passed |
+| Twenty Twenty-One widget browser assertions | 17 passed |
+| Actual HTTP FAQ/source/no-store and unpublished 403 checks | 2 passed |
+| Historical real Elasticsearch 8.19.4 indexing/retrieval/update/deletion (1.3.0) | 9 checks passed |
+| Historical real OpenSearch 2.19.0 indexing/retrieval/update/deletion (1.3.0) | 9 checks passed |
 
-The real-backend suites were run for the 1.3.0 RAG implementation; the 1.4.0
-onboarding/rebuild/provider-contract changes were checked with the isolated
+Latest synthetic workload: six queue processes completed 61 jobs/180 passages in
+2.197 seconds wall time. Six offline-chat processes completed 60 turns in 2.062
+seconds including process startup; per-turn p50 was 12.17 ms, p95 56.78 ms and
+max 58.14 ms. Twenty exact-topic lexical questions selected the intended first
+source (20/20); an unknown question abstained. These are small local service-layer
+measurements, not production SLOs, sustained HTTP load or generative-model quality.
+
+The browser fixture renders the standard Twenty Twenty-One theme and uses the
+real plugin assets and REST handler against synthetic data. Checked: inline
+shortcode, absent shortcode/no script, mobile floating chat, retained conversation,
+unpublished suppression, real FAQ response and hostile outer CSS isolation.
+It is a smoke test, not a cross-browser, accessibility or all-theme audit.
+To reproduce manually: run `php tests/browser-fixture.php seed`, set
+`OTAI_TEST_BROWSER=1`, and start PHP's development server bound **only** to
+`127.0.0.1:19307`, with `tests/browser-router.php` as router. Open `/`,
+`/?view=none`, `/?view=floating`, and `/?view=unpublished`; test a 390px viewport
+and the synthetic support-hours question. Stop the server, clear its synthetic
+browser chat storage, and run `php tests/browser-fixture.php clean`. The router
+requires the dedicated database/port, blocks outbound WordPress HTTP, and never
+uses the live site's configuration. Test/router files are excluded from ZIPs.
+
+The real-backend suites were run for the 1.3.0 RAG implementation; later
+onboarding/rebuild/provider-contract/request-limit changes were checked with the isolated
 WordPress/MySQL suites, not a second real-backend run.
 Both real-backend suites used deterministic synthetic embeddings. No live
 OpenAI/Azure/Ollama embedding or generation model was tested, and the declared
 minimum backend versions were not all exercised.
 
 Before an enterprise production rollout, validate the actual embedding and answer
-models, semantic relevance/abstention, multi-worker load, backups, outage recovery,
+models, semantic relevance/abstention, sustained deployment load, host backups, outage recovery,
 membership ACLs and the site's freshness/privacy requirements. Reranking, query
 rewriting, tokenizer-based total prompt budgeting, full parent-child hierarchy,
 atomic index migrations and agents remain future work, not implemented settings.

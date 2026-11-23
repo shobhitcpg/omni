@@ -14,6 +14,7 @@ class Rest_Controller {
 	const NAMESPACE_V1 = 'omnithread-ai/v1';
 
 	public static function register_routes() {
+		add_filter( 'rest_post_dispatch', array( __CLASS__, 'response_headers' ), 10, 3 );
 		register_rest_route(
 			self::NAMESPACE_V1,
 			'/chat',
@@ -77,6 +78,18 @@ class Rest_Controller {
 				),
 			)
 		);
+	}
+
+	public static function response_headers( $response, $server, $request ) {
+		if ( 0 !== strpos( $request->get_route(), '/' . self::NAMESPACE_V1 . '/' ) || ! $response instanceof \WP_REST_Response ) {
+			return $response;
+		}
+		$response->header( 'Cache-Control', 'no-store, private' );
+		$data = $response->get_data();
+		if ( 429 === $response->get_status() && isset( $data['data']['retry_after'] ) && is_numeric( $data['data']['retry_after'] ) ) {
+			$response->header( 'Retry-After', (string) max( 1, (int) $data['data']['retry_after'] ) );
+		}
+		return $response;
 	}
 
 	/**

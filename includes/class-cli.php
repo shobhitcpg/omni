@@ -58,11 +58,11 @@ class CLI {
 				'provider'   => $provider->id(),
 				'enabled'    => $provider->is_enabled() ? 'yes' : 'no',
 				'configured' => $provider->is_configured() ? 'yes' : 'no',
-				'today'      => Usage::count_today( $provider->id() ),
-				'limit'      => $provider->daily_limit() ? $provider->daily_limit() : '∞',
+				'today_successes' => Usage::count_today( $provider->id() ),
+				'attempt_limit' => $provider->daily_limit() ? $provider->daily_limit() : '∞',
 			);
 		}
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'provider', 'enabled', 'configured', 'today', 'limit' ) );
+		\WP_CLI\Utils\format_items( 'table', $rows, array( 'provider', 'enabled', 'configured', 'today_successes', 'attempt_limit' ) );
 		$stats = Knowledge_Base::stats();
 		if ( $stats ) {
 			\WP_CLI\Utils\format_items( 'table', $stats, array( 'object_type', 'objects', 'chunks' ) );

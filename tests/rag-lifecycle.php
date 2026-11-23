@@ -40,19 +40,19 @@ function lifecycle_table_count() {
 	return $count;
 }
 try {
-	lifecycle_check( true === Installer::install() && 7 === lifecycle_table_count(), 'schema installation verifies all seven local tables' );
-	lifecycle_check( true === Installer::install() && '4' === get_option( 'otai_db_version' ), 'schema installation is idempotent and records version four' );
+	lifecycle_check( true === Installer::install() && 8 === lifecycle_table_count(), 'schema installation verifies all eight local tables' );
+	lifecycle_check( true === Installer::install() && '5' === get_option( 'otai_db_version' ), 'schema installation is idempotent and records version five' );
 	Installer::deactivate();
 	lifecycle_check( ! wp_next_scheduled( Index_Queue::HOOK ) && ! wp_next_scheduled( Installer::CRON_HOOK ), 'deactivation clears both worker schedules' );
 	Installer::install();
 	define( 'WP_UNINSTALL_PLUGIN', plugin_basename( OTAI_FILE ) );
 	require dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'uninstall.php';
-	lifecycle_check( 7 === lifecycle_table_count(), 'default uninstall preserves local knowledge, embeddings and conversations' );
+	lifecycle_check( 8 === lifecycle_table_count(), 'default uninstall preserves local knowledge, embeddings and conversations' );
 	lifecycle_check( ! wp_next_scheduled( Index_Queue::HOOK ), 'uninstall clears schedules even when retaining data' );
 	$delete = true;
 	Settings::flush();
 	otai_uninstall_site();
-	lifecycle_check( 0 === lifecycle_table_count(), 'explicit uninstall removes all seven plugin tables' );
+	lifecycle_check( 0 === lifecycle_table_count(), 'explicit uninstall removes all eight plugin tables' );
 	lifecycle_check( (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->posts ) ) ), 'uninstall preserves unrelated WordPress tables' );
 } catch ( Throwable $error ) {
 	++$errors;

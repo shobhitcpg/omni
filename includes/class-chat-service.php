@@ -114,6 +114,9 @@ class Chat_Service {
 			)
 		);
 
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
 		$message_id = 0;
 		if ( Settings::get( 'store_conversations' ) && '' !== $session ) {
 			$conversation_id = Conversations::get_or_create( $session, $page );

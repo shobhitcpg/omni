@@ -34,6 +34,9 @@ class Setup {
 	}
 
 	public static function notice() {
+		if ( current_user_can( Admin::capability() ) && Access_Policy::systems() && Knowledge_Base::indexable_post_types() && ! has_filter( 'otai_index_post_allowed' ) ) {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'OmniThread AI has blocked post sources because a recognised membership/LMS system is active without an access connector. Curated FAQs remain available. Review Setup & Readiness before using post-based answers.', 'omnithread-ai' ) . ' <a href="' . esc_url( self::url() ) . '">' . esc_html__( 'Review access policy', 'omnithread-ai' ) . '</a></p></div>';
+		}
 		if ( current_user_can( Admin::capability() ) && get_option( 'otai_setup_required' ) ) {
 			echo '<div class="notice notice-info"><p>' . esc_html__( 'OmniThread AI is not published. Complete setup, test your configuration and launch when ready.', 'omnithread-ai' ) . ' <a href="' . esc_url( self::url() ) . '">' . esc_html__( 'Open setup', 'omnithread-ai' ) . '</a></p></div>';
 		}
@@ -109,9 +112,17 @@ class Setup {
 		$add( 'sync', (bool) Settings::get( 'auto_sync' ), __( 'Automatic content updates', 'omnithread-ai' ), __( 'Enable auto-sync or operate a documented manual refresh process.', 'omnithread-ai' ), true );
 		$add( 'https', is_ssl() || 'https' === wp_parse_url( home_url(), PHP_URL_SCHEME ), __( 'HTTPS deployment', 'omnithread-ai' ), __( 'Enable HTTPS before collecting customer messages in production.', 'omnithread-ai' ), true );
 		$add( 'privacy', (bool) get_option( 'otai_setup_privacy_reviewed' ), __( 'Owner privacy/access review', 'omnithread-ai' ), __( 'Review outbound services, public sources, membership restrictions and transcript retention, then acknowledge below.', 'omnithread-ai' ) );
+		$add( 'access_policy', ! Access_Policy::systems() || ! Knowledge_Base::indexable_post_types() || has_filter( 'otai_index_post_allowed' ), __( 'External content-access policy', 'omnithread-ai' ), __( 'A recognised membership/LMS system is active. Post indexing/retrieval is denied by default. Install an access-aware otai_index_post_allowed connector that allows only anonymously public content, or use curated FAQs/custom knowledge with no post types. A registered callback is not proof of correct access rules; test it.', 'omnithread-ai' ) );
 		if ( 'local_only' !== Settings::get( 'mode' ) ) {
 			$provider = Registry::make( Settings::get( 'primary_provider' ) );
 			$add( 'provider', $provider && $provider->is_enabled() && $provider->is_configured(), __( 'Primary answer provider', 'omnithread-ai' ), __( 'Enable/configure your chosen primary provider under AI Providers.', 'omnithread-ai' ) );
+			$uncapped = false;
+			foreach ( Smart_Router::candidates() as $candidate ) {
+				if ( ! $candidate->is_local() && ! $candidate->daily_limit() ) {
+					$uncapped = true;
+				}
+			}
+			$add( 'provider_budget', ! $uncapped, __( 'Answer-provider attempt caps', 'omnithread-ai' ), __( 'At least one eligible cloud provider has no daily attempt cap. Set a cap under AI Providers and a currency spending limit with each upstream provider.', 'omnithread-ai' ), true );
 			$add( 'provider_test', self::tested( 'provider', $recent_test ), __( 'Answer model tested', 'omnithread-ai' ), __( 'Run the primary-provider test after saving configuration. Launch requires a test within 24 hours; changed credentials/model invalidate the saved result.', 'omnithread-ai' ) );
 		}
 		if ( 'keyword' !== Settings::get( 'rag_retrieval' ) ) {

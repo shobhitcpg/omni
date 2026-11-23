@@ -93,7 +93,7 @@ class Installer {
 	}
 
 	public static function table_names() {
-		return array( 'otai_knowledge', 'otai_conversations', 'otai_messages', 'otai_usage', 'otai_index_jobs', 'otai_embeddings', 'otai_embedding_budget' );
+		return array( 'otai_knowledge', 'otai_conversations', 'otai_messages', 'otai_usage', 'otai_index_jobs', 'otai_embeddings', 'otai_embedding_budget', 'otai_request_budget' );
 	}
 
 	public static function install() {
@@ -182,6 +182,13 @@ CREATE TABLE {$p}otai_embedding_budget (
   used int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY  (day)
 ) $charset;
+CREATE TABLE {$p}otai_request_budget (
+  bucket_key char(64) NOT NULL,
+  used bigint(20) unsigned NOT NULL DEFAULT 0,
+  expires_at datetime NOT NULL,
+  PRIMARY KEY  (bucket_key),
+  KEY expires_at (expires_at)
+) $charset;
 CREATE TABLE {$p}otai_conversations (
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   session_key varchar(64) NOT NULL DEFAULT '',
@@ -226,6 +233,7 @@ CREATE TABLE {$p}otai_usage (
 		);
 
 		$required = array(
+			'otai_request_budget' => array( 'bucket_key', 'used', 'expires_at' ),
 			'otai_knowledge' => array( 'content_hash', 'source_modified' ),
 			'otai_index_jobs' => array( 'generation', 'status', 'available_at', 'lease_until', 'lease_token', 'synced_hash' ),
 			'otai_embeddings' => array( 'cache_key', 'profile', 'vector', 'created_at' ),

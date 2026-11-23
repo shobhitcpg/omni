@@ -63,6 +63,7 @@ class Plugin {
 	public static function maintenance() {
 		Conversations::purge( max( 1, (int) Settings::get( 'retention_days', 30 ) ) );
 		Usage::purge( 365 );
+		Request_Budget::purge();
 		global $wpdb;
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}otai_embedding_budget WHERE day < DATE_SUB(UTC_DATE(), INTERVAL 90 DAY)" );
 	}
@@ -91,55 +92,66 @@ class Plugin {
 		return $erasers;
 	}
 
-	public static function export_personal_data( $email ) {
-		$user  = get_user_by( 'email', $email );
-		$items = array();
+	public static function export_personal_data( $email, $page = 1 ) {
+		$user     = get_user_by( 'email', $email );
+		$items    = array();
+		$messages = array();
 		if ( $user ) {
-			foreach ( Conversations::for_user( $user->ID ) as $conversation_id ) {
-				foreach ( Conversations::messages( $conversation_id ) as $message ) {
-					$items[] = array(
-						'group_id'    => 'otai-conversations',
-						'group_label' => __( 'AI chat conversations', 'omnithread-ai' ),
-						'item_id'     => 'otai-message-' . $message['id'],
-						'data'        => array(
-							array(
-								'name'  => __( 'Date', 'omnithread-ai' ),
-								'value' => $message['created_at'],
-							),
-							array(
-								'name'  => __( 'Role', 'omnithread-ai' ),
-								'value' => $message['role'],
-							),
-							array(
-								'name'  => __( 'Message', 'omnithread-ai' ),
-								'value' => $message['content'],
-							),
+			$messages = Conversations::export_page( $user->ID, $page );
+			if ( is_wp_error( $messages ) ) {
+				return $messages;
+			}
+			foreach ( $messages as $message ) {
+				$items[] = array(
+					'group_id'    => 'otai-conversations',
+					'group_label' => __( 'AI chat conversations', 'omnithread-ai' ),
+					'item_id'     => 'otai-message-' . $message['id'],
+					'data'        => array(
+						array(
+							'name'  => __( 'Date', 'omnithread-ai' ),
+							'value' => $message['created_at'],
 						),
-					);
-				}
+						array(
+							'name'  => __( 'Role', 'omnithread-ai' ),
+							'value' => $message['role'],
+						),
+						array(
+							'name'  => __( 'Message', 'omnithread-ai' ),
+							'value' => $message['content'],
+						),
+					),
+				);
 			}
 		}
 		return array(
 			'data' => $items,
-			'done' => true,
+			'done' => count( $messages ) < 100,
 		);
 	}
 
 	public static function erase_personal_data( $email ) {
 		$user    = get_user_by( 'email', $email );
 		$removed = false;
+		$done    = true;
 		if ( $user ) {
-			$ids = Conversations::for_user( $user->ID );
+			$ids = Conversations::for_user( $user->ID, 100 );
+			if ( is_wp_error( $ids ) ) {
+				return $ids;
+			}
 			if ( $ids ) {
-				Conversations::delete( $ids );
+				$result = Conversations::delete( $ids );
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
 				$removed = true;
+				$done = count( $ids ) < 100;
 			}
 		}
 		return array(
 			'items_removed'  => $removed,
 			'items_retained' => false,
 			'messages'       => array(),
-			'done'           => true,
+			'done'           => $done,
 		);
 	}
 }

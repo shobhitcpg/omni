@@ -22,7 +22,7 @@ class Smart_Router {
 	 *     @type string $cache_key  Optional response cache key.
 	 *     @type bool   $skip_local Skip FAQ / extractive answers (e.g. personal order questions).
 	 * }
-	 * @return array reply, provider, model, source, sources, attempts.
+	 * @return array|\WP_Error reply, provider, model, source, sources, attempts; or a request-budget storage error.
 	 */
 	public static function route( array $ctx ) {
 		$ctx = wp_parse_args(
@@ -85,12 +85,15 @@ class Smart_Router {
 
 		// 4. Providers.
 		foreach ( self::candidates( $mode ) as $provider ) {
-			$limit = $provider->daily_limit();
-			if ( $limit > 0 && Usage::count_today( $provider->id() ) >= $limit ) {
+			$reservation = Request_Budget::provider( $provider->id(), $provider->daily_limit() );
+			if ( is_wp_error( $reservation ) ) {
 				$attempts[] = array(
 					'provider' => $provider->id(),
-					'error'    => 'daily limit reached',
+					'error'    => $reservation->get_error_message(),
 				);
+				if ( 'otai_provider_limit' !== $reservation->get_error_code() ) {
+					return $reservation;
+				}
 				continue;
 			}
 			$start  = microtime( true );
@@ -163,7 +166,7 @@ class Smart_Router {
 		}
 		if ( 'single' === $mode ) {
 			$primary = Registry::make( Settings::get( 'primary_provider', 'openai' ) );
-			return $primary && $primary->is_configured() ? array( $primary ) : array();
+			return $primary && $primary->is_enabled() && $primary->is_configured() ? array( $primary ) : array();
 		}
 		$out = array();
 		foreach ( Registry::ordered() as $provider ) {

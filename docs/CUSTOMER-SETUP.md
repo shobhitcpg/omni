@@ -56,7 +56,58 @@ current remote-service health, capacity, security certification or compliance.
 Existing installations retain their enabled/display/routing/storage choices on
 upgrade. They are not forcibly unpublished.
 
+## Membership, LMS and custom access rules
+
+Version 1.4.2 recognises common active membership/LMS plugin directory names,
+including network-active plugins, and denies **all post sources** by default
+when one is found. Setup blocks post-based launch and administrators receive a
+notice until a connector is registered. This also applies to previously indexed
+posts at retrieval time: old local/remote passages are not permission to answer.
+Curated FAQs and custom knowledge are deliberately public; do not paste private
+course, patient, customer or account data into them.
+
+An integration must implement `otai_index_post_allowed` to allow only content
+that an **anonymous visitor** can read. A callback's presence only removes the
+configuration blocker; it does not prove that the callback is correct. Never use
+the current visitor's enrolment/role to authorize a shared public index. This
+release is not a per-member/private-corpus assistant.
+
+Detection is best effort, not universal access-policy discovery. Developers of
+custom/MU access systems must register an identifier/label before indexing:
+
+```php
+add_filter( 'otai_access_systems', function ( $systems ) {
+    $systems['my-access-system'] = 'My access system';
+    return $systems;
+} );
+```
+
+Registration fails closed; it does not grant access. Implement and test a
+site-specific anonymous-public-only connector separately, or select no post types
+and use approved public FAQs/custom knowledge. Re-test activation, changed
+metadata, role restrictions, deactivation and stale remote results. Queue a
+rebuild/cleanup after changing policy. Retrieval denial is immediate, but historic
+remote embeddings are not automatically purged on access-plugin activation;
+remove those separately if your processing/retention policy requires it.
+
 ## Ongoing operations
+
+Set a **Daily request-attempt limit (UTC)** for each enabled cloud provider under
+AI Providers. Zero means unlimited. The limit is reserved atomically before a
+call and includes unsuccessful calls and connectivity tests: an HTTP timeout does
+not prove the provider did not process/bill the request. Cache hits do not consume
+model attempts. Smart routing can use the next eligible provider's independent
+allowance; single-provider mode does not. Disabled providers are not selected.
+
+These are request counts, **not dollar/token spending limits**. Set upstream
+provider billing/spending caps too. The embedding input budget is separate.
+Owner/admin preview bypasses visitor IP rate limits but not model-attempt caps.
+Visitors share an allowance when they share an IP address (for example an office).
+If your site is behind a proxy, configure the documented `otai_client_ip` hook to
+trust only your actual proxy; do not blindly trust arbitrary forwarded headers.
+Missing quota storage fails closed for rate-limited/capped requests, not as an
+unlimited fallback. Fixed windows reset on minute/UTC day boundaries and can
+permit a burst spanning a boundary; this is not a sliding-window limiter.
 
 Use **Tools > Site Health** and **Setup & Readiness** to review local checks.
 These page loads never contact an inference or search service. Remote tests are
@@ -77,6 +128,24 @@ questions again after changing models, source rules, prompts or industry.
 Changing embedding profiles requires rebuilding the vector corpus; there is no
 atomic old/new profile switch yet. Treat membership ACL changes as a deployment
 change requiring tests.
+
+### Privacy operations and backups
+
+Transcripts are off by default. When enabled, WordPress personal-data export
+returns up to 100 messages per page, and erasure processes up to 100 conversations
+per callback until complete. Storage errors fail the privacy request instead of
+claiming success; fix database access and retry. The email-based tools identify
+logged-in users' linked conversations, not arbitrary anonymous sessions. Establish
+your own verified process for anonymous-session requests and provider-side data.
+Retention removes old local conversations and their messages; it is not deletion
+from a third-party provider or a visitor's browser storage.
+
+Back up plugin files, the WordPress database and the salts/encryption-key
+configuration together through your normal secured backup service. Restoring
+encrypted keys requires the same encryption secret; do not put those secrets in
+a public ZIP or support report. Use InnoDB for plugin tables and test recovery on
+staging. A local synthetic SQL restore drill passed, but that is not proof of your
+host's disaster recovery or a downgrade between arbitrary schema versions.
 
 ## Support and manual updates
 

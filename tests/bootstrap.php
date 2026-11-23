@@ -8,11 +8,19 @@
 
 $core = getenv( 'OTAI_TEST_WP_CORE' );
 $host = getenv( 'OTAI_TEST_DB_HOST' );
-if ( 'cli' !== PHP_SAPI || '127.0.0.1:19306' !== $host || ! $core || ! is_file( $core . DIRECTORY_SEPARATOR . 'wp-settings.php' ) ) {
+$network = getenv( 'OTAI_TEST_NETWORK' );
+if ( $network && ! in_array( $network, array( 'prepare', 'run' ), true ) ) {
+	throw new RuntimeException( 'Invalid isolated network test mode.' );
+}
+$browser = 'cli-server' === PHP_SAPI && '1' === getenv( 'OTAI_TEST_BROWSER' )
+	&& isset( $_SERVER['REMOTE_ADDR'], $_SERVER['SERVER_PORT'] )
+	&& '127.0.0.1' === $_SERVER['REMOTE_ADDR'] && 19307 === (int) $_SERVER['SERVER_PORT'];
+if ( ( 'cli' !== PHP_SAPI && ! $browser ) || '127.0.0.1:19306' !== $host || ! $core || ! is_file( $core . DIRECTORY_SEPARATOR . 'wp-settings.php' ) ) {
 	throw new RuntimeException( 'Use the dedicated loopback test database and a valid OTAI_TEST_WP_CORE directory.' );
 }
 $mysqli = new mysqli( '127.0.0.1', 'root', '', '', 19306 );
-$mysqli->query( 'CREATE DATABASE IF NOT EXISTS otai_rag_test CHARACTER SET utf8mb4' );
+$database = $network ? 'otai_rag_network_test' : 'otai_rag_test';
+$mysqli->query( 'CREATE DATABASE IF NOT EXISTS ' . $database . ' CHARACTER SET utf8mb4' );
 $mysqli->close();
 $_SERVER['HTTP_HOST'] = 'otai-tests.invalid';
 $_SERVER['SERVER_NAME'] = 'otai-tests.invalid';
@@ -21,7 +29,7 @@ $_SERVER['PHP_SELF'] = '/wp-admin/install.php';
 $_SERVER['SCRIPT_NAME'] = '/wp-admin/install.php';
 $_SERVER['REQUEST_METHOD'] = 'GET';
 define( 'ABSPATH', rtrim( $core, '\\/' ) . DIRECTORY_SEPARATOR );
-define( 'DB_NAME', 'otai_rag_test' );
+define( 'DB_NAME', $database );
 define( 'DB_USER', 'root' );
 define( 'DB_PASSWORD', '' );
 define( 'DB_HOST', $host );
@@ -34,6 +42,18 @@ define( 'WP_DEBUG_DISPLAY', true );
 define( 'WPMU_PLUGIN_DIR', __DIR__ . DIRECTORY_SEPARATOR . 'no-mu-plugins' );
 define( 'WP_PLUGIN_DIR', dirname( __DIR__, 2 ) );
 define( 'WP_CONTENT_DIR', dirname( __DIR__, 3 ) );
+if ( $browser ) {
+	define( 'WP_CONTENT_URL', 'http://127.0.0.1:19307/test-content' );
+	define( 'WP_PLUGIN_URL', WP_CONTENT_URL . '/plugins' );
+}
+if ( 'run' === $network ) {
+	define( 'MULTISITE', true );
+	define( 'SUBDOMAIN_INSTALL', false );
+	define( 'DOMAIN_CURRENT_SITE', 'otai-tests.invalid' );
+	define( 'PATH_CURRENT_SITE', '/' );
+	define( 'SITE_ID_CURRENT_SITE', 1 );
+	define( 'BLOG_ID_CURRENT_SITE', 1 );
+}
 $table_prefix = 'wp_';
 require ABSPATH . 'wp-settings.php';
 require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -41,5 +61,5 @@ if ( ! is_blog_installed() ) {
 	wp_install( 'RAG integration tests', 'rag-test-admin', 'test@example.invalid', false, '', wp_generate_password( 32 ) );
 }
 wp_installing( false );
-require dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'omnithread-ai.php';
+require_once dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'omnithread-ai.php';
 \OmniThreadAI\Plugin::instance();

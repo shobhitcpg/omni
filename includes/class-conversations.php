@@ -132,23 +132,53 @@ class Conversations {
 	/**
 	 * Personal data eraser/exporter support: conversations by user ID.
 	 */
-	public static function for_user( $user_id ) {
+	public static function for_user( $user_id, $limit = 0 ) {
 		global $wpdb;
 		$c = self::conversations_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$c} WHERE user_id = %d", $user_id ) ) );
+		$sql = $wpdb->prepare( "SELECT id FROM {$c} WHERE user_id = %d ORDER BY id", $user_id );
+		if ( $limit > 0 ) {
+			$sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+		}
+		$ids = $wpdb->get_col( $sql );
+		return $wpdb->last_error ? self::storage_error() : array_map( 'intval', $ids );
+	}
+
+	public static function export_page( $user_id, $page ) {
+		global $wpdb;
+		$c = self::conversations_table();
+		$m = self::messages_table();
+		$rows = $wpdb->get_results( $wpdb->prepare(
+			"SELECT msg.* FROM {$m} msg INNER JOIN {$c} conv ON conv.id=msg.conversation_id WHERE conv.user_id=%d ORDER BY msg.id LIMIT 100 OFFSET %d",
+			$user_id, ( max( 1, (int) $page ) - 1 ) * 100
+		), ARRAY_A );
+		return $wpdb->last_error ? self::storage_error() : $rows;
+	}
+
+	private static function storage_error() {
+		$error = new \WP_Error( 'otai_privacy_storage', __( 'Conversation privacy operation could not complete. Check database access and retry; no successful erasure/export is being claimed.', 'omnithread-ai' ) );
+		RAG::error( $error );
+		return $error;
 	}
 
 	public static function delete( array $ids ) {
 		global $wpdb;
 		$ids = array_filter( array_map( 'intval', $ids ) );
 		if ( ! $ids ) {
-			return;
+			return true;
 		}
 		$in = implode( ',', $ids );
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( 'DELETE FROM ' . self::messages_table() . " WHERE conversation_id IN ({$in})" );
-		$wpdb->query( 'DELETE FROM ' . self::conversations_table() . " WHERE id IN ({$in})" );
+		if ( false === $wpdb->query( 'START TRANSACTION' ) ) {
+			return self::storage_error();
+		}
+		if ( false === $wpdb->query( 'DELETE FROM ' . self::messages_table() . " WHERE conversation_id IN ({$in})" )
+			|| false === $wpdb->query( 'DELETE FROM ' . self::conversations_table() . " WHERE id IN ({$in})" )
+			|| false === $wpdb->query( 'COMMIT' ) ) {
+			$wpdb->query( 'ROLLBACK' );
+			return self::storage_error();
+		}
+		return true;
 		// phpcs:enable
 	}
 }

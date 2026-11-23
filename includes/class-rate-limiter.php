@@ -1,6 +1,6 @@
 <?php
 /**
- * Per-IP rate limiting backed by transients (uses the persistent object cache when available).
+ * Per-IP fixed-window rate limiting with atomic database reservations.
  *
  * @package OmniThreadAI
  */
@@ -37,17 +37,17 @@ class Rate_Limiter {
 		);
 		foreach ( $windows as $suffix => $window ) {
 			list( $ttl, $limit ) = $window;
-			$bucket              = (int) floor( time() / $ttl );
-			$key                 = 'otai_rl_' . $suffix . '_' . $hash . '_' . $bucket;
-			$count               = (int) get_transient( $key );
-			if ( $count >= $limit ) {
+			$result = Request_Budget::reserve( 'visitor:' . $hash . ':' . $suffix, (int) $ttl, $limit );
+			if ( is_wp_error( $result ) && 'otai_budget_exhausted' === $result->get_error_code() ) {
 				return new \WP_Error(
 					'otai_rate_limited',
 					'm' === $suffix ? __( 'You are sending messages too quickly. Please wait a moment.', 'omnithread-ai' ) : __( 'Daily message limit reached. Please try again tomorrow.', 'omnithread-ai' ),
-					array( 'status' => 429 )
+					$result->get_error_data()
 				);
 			}
-			set_transient( $key, $count + 1, $ttl );
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
 		}
 		return true;
 	}

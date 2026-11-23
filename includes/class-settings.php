@@ -17,6 +17,7 @@ class Settings {
 	const GROUP  = 'otai_settings_group';
 
 	private static $cache = null;
+	private static $cache_blog = null;
 
 	public static function defaults() {
 		return array(
@@ -194,9 +195,10 @@ class Settings {
 	}
 
 	public static function all() {
-		if ( null === self::$cache ) {
+		if ( null === self::$cache || self::$cache_blog !== get_current_blog_id() ) {
 			$stored      = get_option( self::OPTION, array() );
 			self::$cache = array_merge( self::defaults(), is_array( $stored ) ? $stored : array() );
+			self::$cache_blog = get_current_blog_id();
 		}
 		return self::$cache;
 	}

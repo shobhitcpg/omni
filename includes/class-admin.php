@@ -275,7 +275,7 @@ class Admin {
 			<div class="otai-checklist">
 				<?php
 				$checks = array(
-					array( Settings::get( 'enabled' ), __( 'Assistant enabled on the site', 'omnithread-ai' ), 'general' ),
+					array( Setup::published(), __( 'Assistant published on the site', 'omnithread-ai' ), 'general' ),
 					array( (bool) $ready || 'local_only' === Settings::get( 'mode' ), $ready ? sprintf( /* translators: %s: providers */ __( 'AI providers ready: %s', 'omnithread-ai' ), implode( ', ', array_map( function ( $p ) { return $p->label(); }, $ready ) ) ) : __( 'Connect at least one AI provider (or use Local-only mode)', 'omnithread-ai' ), 'providers' ),
 					array( $chunks > 0, sprintf( /* translators: %d: chunks */ __( 'Knowledge base: %d passages indexed', 'omnithread-ai' ), $chunks ), 'knowledge' ),
 					array( '' !== trim( (string) Settings::get( 'faq' ) ), __( 'FAQ answers added (instant, free answers)', 'omnithread-ai' ), 'knowledge' ),
@@ -552,9 +552,9 @@ class Admin {
 				self::row( $label, $control, $help, $field_id );
 			}
 			self::row(
-				__( 'Daily request limit', 'omnithread-ai' ),
+				__( 'Daily request-attempt limit (UTC)', 'omnithread-ai' ),
 				sprintf( '<input type="number" min="0" name="%s[daily_limit]" value="%d" class="small-text">', esc_attr( $base ), isset( $stored['daily_limit'] ) ? (int) $stored['daily_limit'] : 0 ),
-				__( '0 = unlimited. When reached, Smart mode skips to the next provider – a simple budget guard.', 'omnithread-ai' )
+				__( '0 = unlimited. Atomically reserved before each model call, including failed calls and connection tests. Smart mode can try the next enabled provider. This is a request cap, not a currency/token budget; set provider-side spending limits too.', 'omnithread-ai' )
 			);
 			echo '</table>';
 			$supports = $provider->supports();
@@ -1006,6 +1006,10 @@ class Admin {
 		if ( ! $provider->is_configured() ) {
 			return new \WP_Error( 'otai_unconfigured', __( 'Fill in the required fields and save first.', 'omnithread-ai' ) );
 		}
+		$reservation = Request_Budget::provider( $provider->id(), $provider->daily_limit() );
+		if ( is_wp_error( $reservation ) ) {
+			return $reservation;
+		}
 		$start  = microtime( true );
 		$result = $provider->chat(
 			array(
@@ -1027,6 +1031,15 @@ class Admin {
 				'session'     => 'test-' . get_current_user_id(),
 			)
 		);
+		Usage::log( array(
+			'provider' => $provider->id(), 'answer_source' => 'provider_test',
+			'success' => ! is_wp_error( $result ),
+			'model' => is_wp_error( $result ) ? '' : $result['model'],
+			'input_tokens' => is_wp_error( $result ) ? 0 : $result['input_tokens'],
+			'output_tokens' => is_wp_error( $result ) ? 0 : $result['output_tokens'],
+			'latency_ms' => (int) round( ( microtime( true ) - $start ) * 1000 ),
+			'error' => is_wp_error( $result ) ? $result->get_error_message() : '',
+		) );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
